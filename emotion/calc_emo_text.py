@@ -1,4 +1,5 @@
 # computing emotions from text using a prelabeled dataset with a pretrained model from Huggingface
+# pip install transformers pandas tqdm openpyxl
 
 import pandas as pd
 import torch
