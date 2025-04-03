@@ -1,3 +1,4 @@
+# pip install torch  matplotlib seaborn numpy torchvision scikit-learn
 import torch
 import torch.nn as nn
 import torch.optim as optim
