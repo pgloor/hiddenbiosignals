@@ -1,0 +1,54 @@
+USER_NAME = "peter_biolingo"
+RECORDING_NAME = "specialplant"
+
+SERVER_IP = "xxx.xxx.x.xxx" # IP address of your server
+URL = "http://" + SERVER_IP + ":5001/" # or ":5000"
+REGISTER_URL = URL + "recording/register"
+
+const ADC_PIN = C_PIN_06                    # ACD input on IN06
+const SAMPLE_RATE = 142                   # Sampling rate in Hz
+const SAMPLING_TIME = 1000/SAMPLE_RATE      # Sampling time in ms
+
+const THRESHOLD = 1500
+
+max_duration = 0
+i = 0
+out:byte[18000] #[601]
+
+clear()
+drawTextCentered(120, 120, USER_NAME)
+update()
+
+addRequestHeader("Content-Type", "application/json")
+addRequestHeader("User-Name", USER_NAME)
+if (postRequest(REGISTER_URL, "{ \"recording\": \"" + RECORDING_NAME + "\", \"sample_rate\":" + SAMPLE_RATE + ", \"threshold\":" + THRESHOLD +"}")):
+    id = strToInt(readRequestJSON("id"))
+
+UPDATE_URL = URL + "recording/" + id + "/update"
+
+while(true):
+    meassureTime = millis()
+    voltage = readADC(ADC_PIN, 10)
+
+    hByte = byteToHex(voltage>>8)
+    lByte = byteToHex(voltage&0xFF)
+
+    index = 4*i  # das ist die Startvariable für das Byte-Muster
+    out[index] = hByte[0]
+    out[index+1] = hByte[1]
+    out[index+2] = lByte[0]
+    out[index+3] = lByte[1]
+
+    i = i + 1
+
+    if(i >= THRESHOLD):
+        i = 0
+        start = millis()
+        postRequest(UPDATE_URL, out)
+        print "Post took:" + (millis() - start) + "ms"
+        out = ""
+
+    # Sample Time Keeper
+    timeDifference = millis() - meassureTime
+    if(timeDifference <= SAMPLING_TIME)
+        delay(SAMPLING_TIME - timeDifference)
